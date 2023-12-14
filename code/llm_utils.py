@@ -2,9 +2,7 @@
 # Date: Aug 2023
 # Description: Wrappers for easy querying of LLMs.
 
-CACHE_DIR = '/scratch/weights/llama2'
 import os
-os.environ['TRANSFORMERS_CACHE'] = CACHE_DIR
 import random
 import csv
 import tqdm
@@ -14,13 +12,20 @@ import itertools
 import wandb
 from transformers import GenerationConfig, pipeline
 import openai
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
 import time
 from typing import *
+from dotenv import load_dotenv
 
-# Please provide the api key in api_key.txt!
-with open("api_key.txt", "r") as f:
-    API_KEY = f.readline().strip()
-openai.api_key = API_KEY
+load_dotenv()
+
+# Please provide the api keys in .env!
+OPENAI_API_KEY = os.environ['OPENAI_API_KEY']
+MISTRAL_API_KEY = os.environ['MISTRAL_API_KEY']
+CACHE_DIR = os.environ['TRANSFORMERS_CACHE']
+
+
 
 
 class LLM:
@@ -155,6 +160,61 @@ class ChatGPT:
                 # Exponential backoff
                 if i == max_retries - 1:  # If this was the last attempt
                     raise  # re-throw the last exception
+                else:
+                    # Wait for a bit before retrying and increase the delay each time
+                    sleep_time = (2 ** i) + random.random()  # Exponential backoff with full jitter
+                    time.sleep(sleep_time)
+
+class Mistral:
+    """Mistral wrapper.
+    """
+    def __init__(self, model_name, api_key=None, temperature=0.0, verbose=False):
+        self.model_name = model_name
+        self.temperature = temperature
+        self.verbose = verbose
+        self.api_key = os.environ['MISTRAL_API_KEY']
+        assert self.api_key, "Need Mistral API Key"
+        self.client = MistralClient(api_key=self.api_key)
+        
+        
+    def getOutput(self, prompt:str, max_retries=30) -> str:
+        """Gets output from Mistral API.
+
+        Args:
+            prompt (str): Prompt
+            max_retries (int, optional): Max number of retries for when API call fails. Defaults to 30.
+
+        Returns:
+            str: Mistral response.
+        """
+        
+        if self.verbose:
+            print("### PROMPT ###")
+            print(prompt)
+
+        m = [
+            ChatMessage(role="system", content="You are a helpful assistant."),
+            ChatMessage(role="user", content=prompt)
+        ]
+
+        for i in range(max_retries):
+            try:
+                chat_response = self.client.chat(
+                    model=self.model_name,
+                    messages=m,
+                )
+
+                output = chat_response.choices[0].message.content
+                
+                if self.verbose:
+                    print("### RESPONSE ###")
+                    print(output)
+                
+                return output
+            except Exception as e:
+                # Exponential backoff
+                if i == max_retries - 1:  # If this was the last attempt
+                    raise(e)  # re-throw the last exception
                 else:
                     # Wait for a bit before retrying and increase the delay each time
                     sleep_time = (2 ** i) + random.random()  # Exponential backoff with full jitter

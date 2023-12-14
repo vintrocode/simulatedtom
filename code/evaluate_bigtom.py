@@ -76,11 +76,15 @@ def evaluate_condition(init_belief, variable, condition, gotRight):
     if args.eval_model == None:
         if "gpt" in args.perspective_model:
             perspectiveModel = ChatGPT(args.perspective_model, temperature=args.temperature, verbose=args.verbose)
+        if "mistral" in args.perspective_model:
+            perspectiveModel = Mistral(args.perspective_model, temperature=args.temperature, verbose=args.verbose)
         else:
             perspectiveModel = LLM(args.perspective_model, temperature=args.temperature, load_in_8bit=args.eight_bit, verbose=args.verbose)
         
         if "gpt" in args.sim_model:
             simModel = ChatGPT(args.sim_model, temperature=args.temperature, verbose=args.verbose)
+        if "mistral" in args.perspective_model:
+            perspectiveModel = Mistral(args.perspective_model, temperature=args.temperature, verbose=args.verbose)
         else:
             simModel = LLM(args.sim_model, temperature=args.temperature, load_in_8bit=args.eight_bit, verbose=args.verbose)
 
@@ -88,6 +92,8 @@ def evaluate_condition(init_belief, variable, condition, gotRight):
         simModel = None
         if "gpt" in args.eval_model:
             perspectiveModel = ChatGPT(args.eval_model, temperature=args.temperature, verbose=args.verbose)
+        if "mistral" in args.eval_model:
+            perspectiveModel = Mistral(args.eval_model, temperature=args.temperature, verbose=args.verbose)
         else:
             perspectiveModel = LLM(args.eval_model, temperature=args.temperature, load_in_8bit=args.eight_bit, verbose=args.verbose)
 
