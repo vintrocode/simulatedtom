@@ -27,8 +27,8 @@ $ python evaluate_tomi.py --eval_model=gpt-4 --method=baseline --wandb=1 --tags=
 
 ## Requirements
 
-You need the `transformers` library and the `openai` library to run most of the code.
-You also need a txt file called `api_key.txt` that contains the OpenAI API key in the same directory as the code to query ChatGPT.
+You need the `transformers`, `openai`, and `mistralai` libraries to run most of the code.
+You'll also need to specify API keys in a `.env` file (see `.env.template`).
 
 To run local models, we use the HuggingFace pipeline.
 Make sure to change the model cache directory -- currently, it is set to `CACHE_DIR = '/scratch/weights/llama2'` within `llm_utils.py`.
@@ -56,6 +56,9 @@ There are two files used to run evaluations on BigToM and ToMi:
 `--eval_model`: model to evaluate on. 
 -  `gpt-4`
 - `gpt-3.5-turbo`
+- `mistral-tiny`
+- `mistral-small`
+- `mistral-medium`
 - `meta-llama/Llama-2-7b-chat-hf`
 - `meta-llama/Llama-2-13b-chat-hf`
 
